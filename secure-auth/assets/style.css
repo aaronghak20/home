@@ -1,0 +1,323 @@
+/* ===========================================================
+   SecureAuth — visual language
+   Theme: a digital vault. Ink-blue depth, a single brass/gold
+   accent standing in for a seal, and a tumbler-pin strength
+   meter as the one signature flourish.
+   =========================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --ink-950: #0a0e17;
+  --ink-900: #10151f;
+  --ink-800: #161d2b;
+  --ink-700: #202839;
+  --ink-600: #313c52;
+  --line: #2a3346;
+
+  --text-hi: #eef1f7;
+  --text-mid: #aab2c5;
+  --text-low: #6b7488;
+
+  --gold: #d4a657;
+  --gold-hi: #e8c07f;
+  --green: #4fd1a5;
+  --red: #f2777a;
+
+  --radius: 10px;
+  --shadow-panel: 0 30px 60px -25px rgba(0, 0, 0, 0.6);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background: var(--ink-950);
+  color: var(--text-hi);
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* subtle radial vignette so the card feels like it sits inside a vault door */
+body {
+  background-image:
+    radial-gradient(circle at 50% 0%, rgba(212, 166, 87, 0.06), transparent 45%),
+    radial-gradient(circle at 100% 100%, rgba(79, 209, 165, 0.04), transparent 40%);
+}
+
+h1 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0 0 0.3rem;
+  color: var(--text-hi);
+}
+
+/* ---------------- Auth pages (login / register) ---------------- */
+
+.auth-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+.auth-panel {
+  width: 100%;
+  max-width: 400px;
+  background: var(--ink-900);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-panel);
+  padding: 2.25rem 2rem 2rem;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.75rem;
+}
+
+.brand-mark {
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1.5px solid var(--gold);
+  color: var(--gold);
+  font-size: 0.5rem;
+}
+
+.brand-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mid);
+}
+
+.subtext {
+  color: var(--text-mid);
+  font-size: 0.9rem;
+  margin: 0 0 1.5rem;
+  line-height: 1.5;
+}
+
+label {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-low);
+  margin: 1.1rem 0 0.4rem;
+}
+
+label:first-of-type { margin-top: 0; }
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+  width: 100%;
+  padding: 0.7rem 0.85rem;
+  background: var(--ink-800);
+  border: 1px solid var(--ink-600);
+  border-radius: 8px;
+  color: var(--text-hi);
+  font-size: 0.92rem;
+  font-family: 'Inter', sans-serif;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+input::placeholder { color: var(--text-low); }
+
+input:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(212, 166, 87, 0.15);
+}
+
+.password-field { position: relative; }
+
+.password-field input { padding-right: 2.6rem; }
+
+.toggle-visibility {
+  position: absolute;
+  right: 0.6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  opacity: 0.55;
+  padding: 0.2rem;
+}
+.toggle-visibility:hover { opacity: 1; }
+
+.field-hint {
+  font-size: 0.76rem;
+  color: var(--text-low);
+  margin: 0.35rem 0 0;
+}
+.field-error { color: var(--red); min-height: 1.1em; }
+
+/* Tumbler-pin strength meter: the one signature element */
+.strength-meter {
+  display: flex;
+  gap: 4px;
+  margin-top: 0.6rem;
+}
+.strength-meter span {
+  display: block;
+  width: 100%;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--ink-600);
+  position: relative;
+}
+.strength-meter span::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 3px;
+  background: var(--ink-600);
+  width: 0%;
+  transition: width 0.25s ease, background 0.25s ease;
+}
+/* JS toggles these on the wrapping element via data-strength */
+.strength-meter[data-strength="1"] span::before { width: 25%; background: var(--red); }
+.strength-meter[data-strength="2"] span::before { width: 50%; background: var(--red); }
+.strength-meter[data-strength="3"] span::before { width: 75%; background: var(--gold); }
+.strength-meter[data-strength="4"] span::before { width: 100%; background: var(--green); }
+
+.btn-primary {
+  width: 100%;
+  margin-top: 1.6rem;
+  padding: 0.75rem 1rem;
+  background: var(--gold);
+  color: var(--ink-950);
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  font-size: 0.92rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+.btn-primary:hover { background: var(--gold-hi); }
+.btn-primary:active { transform: translateY(1px); }
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--text-mid);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.btn-ghost:hover { border-color: var(--gold); color: var(--gold-hi); }
+
+.switch-link {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-mid);
+  margin-top: 1.5rem;
+}
+.switch-link a { color: var(--gold); text-decoration: none; }
+.switch-link a:hover { text-decoration: underline; }
+
+.alert {
+  border-radius: 8px;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.85rem;
+  margin-bottom: 1.2rem;
+  line-height: 1.45;
+}
+.alert ul { margin: 0; padding-left: 1.1rem; }
+.alert-error {
+  background: rgba(242, 119, 122, 0.1);
+  border: 1px solid rgba(242, 119, 122, 0.35);
+  color: #ffb3b5;
+}
+.alert-success {
+  background: rgba(79, 209, 165, 0.1);
+  border: 1px solid rgba(79, 209, 165, 0.35);
+  color: #9be8cf;
+}
+
+/* ---------------- Dashboard ---------------- */
+
+.dash-shell { min-height: 100vh; }
+
+.dash-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.1rem 2rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.dash-main {
+  display: flex;
+  justify-content: center;
+  padding: 3rem 1rem;
+}
+
+.dash-card {
+  width: 100%;
+  max-width: 480px;
+  background: var(--ink-900);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 2.25rem 2rem;
+  box-shadow: var(--shadow-panel);
+}
+
+.eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin: 0 0 0.6rem;
+}
+
+.detail-list {
+  margin: 1.75rem 0 0;
+  display: grid;
+  gap: 0.9rem;
+}
+.detail-list > div {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px dashed var(--ink-600);
+  padding-bottom: 0.6rem;
+}
+.detail-list dt {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--text-low);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.detail-list dd { margin: 0; font-size: 0.9rem; color: var(--text-hi); }
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
+
+@media (max-width: 480px) {
+  .auth-panel { padding: 1.75rem 1.4rem; }
+  .dash-header { padding: 1rem 1.25rem; }
+}
