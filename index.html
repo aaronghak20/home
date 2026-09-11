@@ -1,40 +1,198 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>index.html</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snake</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0f172a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    color: #e2e8f0;
+  }
+  #app {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  canvas {
+    background: #1e293b;
+    border: 2px solid #334155;
+    border-radius: 8px;
+  }
+  #hud {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    font-size: 18px;
+    font-weight: 600;
+  }
+  #hud span { color: #94a3b8; font-weight: 400; }
+  #msg {
+    position: absolute;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-align: center;
+    color: #f8fafc;
+    background: rgba(15, 23, 42, 0.85);
+    padding: 16px 28px;
+    border-radius: 10px;
+    border: 1px solid #334155;
+    display: none;
+    user-select: none;
+  }
+  #msg.small { font-size: 18px; }
+  .hidden { visibility: hidden; }
+</style>
 </head>
+<body>
+<div id="app">
+  <div id="hud">
+    <div>Score: <span id="score">0</span></div>
+    <div>Best: <span id="best">0</span></div>
+  </div>
+  <div style="position: relative;">
+    <canvas id="game" width="480" height="480"></canvas>
+    <div id="msg"></div>
+  </div>
+  <div style="font-size: 13px; color: #64748b;">
+    Arrow keys / WASD to steer &middot; snake wraps around the edges
+  </div>
+</div>
 
-<body style="background-color: #BCF5F0; ">
+<script>
+(function () {
+  var COLS = 20, ROWS = 20, CELL = 24;
+  var canvas = document.getElementById('game');
+  var ctx = canvas.getContext('2d');
+  var scoreEl = document.getElementById('score');
+  var bestEl = document.getElementById('best');
+  var msgEl = document.getElementById('msg');
 
-<center>
-<h1><u>The story of Isaac Newton</u></h1>
-</centre> 
-<hr>
- 
- <center>
-<h2><u>Family background</u></h2>
-</center>
+  var dirs = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+  var opposite = { up: 'down', down: 'up', left: 'right', right: 'left' };
 
-<p> I grew up in a humble family where my mother raised two of my sibling sisters and I. I would say that i was well nurtured by a single parent and taught they ways of respects and culture. Our source of income was through the hardwork our mother went through to make both end meets for us.</p>
-<hr>
+  var snake, dir, nextDir, food, score, best, speed, loop, running;
 
-<center>
-<h2><u>Education background</u></h2>
-</center>
+  function mod(n, m) { return ((n % m) + m) % m; }
 
-<P>My experience at Riara university is one in a million that is unforgetteable. I remembered all the events i couldn't miss.The best of all is the prom part that was held in 12th june 2018.</p>
-<br><hr>
+  function spawnFood() {
+    var free = [];
+    for (var y = 0; y < ROWS; y++) {
+      for (var x = 0; x < COLS; x++) {
+        var occupied = snake.some(function (s) { return s[0] === x && s[1] === y; });
+        if (!occupied) free.push([x, y]);
+      }
+    }
+    if (free.length === 0) { endGame(); return; }
+    food = free[Math.floor(Math.random() * free.length)];
+  }
 
-<center>
-<h2><u>My career vision</u></h2>
-</centre>
+  function startGame() {
+    snake = [[10, 10], [9, 10], [8, 10]];
+    dir = 'right';
+    nextDir = 'right';
+    score = 0;
+    speed = 120;
+    running = true;
+    scoreEl.textContent = score;
+    msgEl.style.display = 'none';
+    spawnFood();
+    clearTimeout(loop);
+    step();
+  }
 
-<p>I started my career in which i visioned myself to advance to higher level and bring great impact to the society. software engineering is what i intended to become a version of me in a society of elites.</p>
-<hr>
+  function endGame() {
+    running = false;
+    clearTimeout(loop);
+    best = Math.max(best || 0, score);
+    bestEl.textContent = best;
+    if (score > 0) {
+      msgEl.textContent = 'Game Over \u00b7 Score ' + score + ' \u00b7 press any arrow to retry';
+      msgEl.classList.remove('small');
+    } else {
+      msgEl.textContent = 'You win!';
+      msgEl.classList.add('small');
+    }
+    msgEl.style.display = 'block';
+  }
 
-<a href="hobbies.html">Hobbies and Interests</a>
+  function step() {
+    if (!running) return;
+    dir = nextDir;
+    var head = snake[0];
+    var d = dirs[dir];
+    var nx = mod(head[0] + d[0], COLS);
+    var ny = mod(head[1] + d[1], ROWS);
 
-<a href="https://www.facebook.com/Aaron.ghak">Find me on facebook</a>
+    var willEat = food && nx === food[0] && ny === food[1];
+    var hitSelf = snake.some(function (s) { return s[0] === nx && s[1] === ny; });
 
+    if (hitSelf) {
+      if (snake.length <= 1) { endGame(); return; }
+      endGame();
+      return;
+    }
+
+    snake.unshift([nx, ny]);
+    if (willEat) {
+      score += 10;
+      scoreEl.textContent = score;
+      speed = Math.max(60, speed - 3);
+      spawnFood();
+    } else {
+      snake.pop();
+    }
+    draw();
+    loop = setTimeout(step, speed);
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = '#334155';
+    ctx.lineWidth = 1;
+    for (var x = 0; x <= COLS; x++) {
+      ctx.beginPath(); ctx.moveTo(x * CELL, 0); ctx.lineTo(x * CELL, canvas.height); ctx.stroke();
+    }
+    for (var y = 0; y <= ROWS; y++) {
+      ctx.beginPath(); ctx.moveTo(0, y * CELL); ctx.lineTo(canvas.width, y * CELL); ctx.stroke();
+    }
+
+    snake.forEach(function (seg, i) {
+      var shade = i === 0 ? '#22c55e' : '#16a34a';
+      ctx.fillStyle = shade;
+      ctx.fillRect(seg[0] * CELL + 1, seg[1] * CELL + 1, CELL - 2, CELL - 2);
+    });
+
+    if (food) {
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(food[0] * CELL + 1, food[1] * CELL + 1, CELL - 2, CELL - 2);
+    }
+  }
+
+  document.addEventListener('keydown', function (e) {
+    var key = e.key.toLowerCase();
+    var d = key === 'arrowup' || key === 'w' ? 'up'
+          : key === 'arrowdown' || key === 's' ? 'down'
+          : key === 'arrowleft' || key === 'a' ? 'left'
+          : key === 'arrowright' || key === 'd' ? 'right' : null;
+    if (!d) return;
+    e.preventDefault();
+    if (!running) { startGame(); return; }
+    if (d !== opposite[dir]) nextDir = d;
+  });
+
+  draw();
+  msgEl.textContent = 'Press an arrow key to start';
+  msgEl.style.display = 'block';
+})();
+</script>
 </body>
 </html>
